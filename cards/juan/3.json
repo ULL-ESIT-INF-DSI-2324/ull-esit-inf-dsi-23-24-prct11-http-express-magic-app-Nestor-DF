@@ -1,1 +1,11 @@
-{"id":3,"name":"Hydra","manaCost":500,"color":"Multicolor","type":"Planeswalker","rarity":"Common","rulesText":"Tap: aaa","marketValue":20,"loyaltyMarks":5}
+{
+  "id": 3,
+  "name": "Hydra",
+  "manaCost": 500,
+  "color": "Multicolor",
+  "type": "Planeswalker",
+  "rarity": "Common",
+  "rulesText": "Tap: aaa",
+  "marketValue": 20,
+  "loyaltyMarks": 5
+}
