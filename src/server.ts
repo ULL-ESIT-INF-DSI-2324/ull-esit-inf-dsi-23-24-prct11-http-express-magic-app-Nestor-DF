@@ -1,94 +1,105 @@
-import { MagiCard } from './MagiCard.js';
+import express from 'express';
 import { CardManager } from './CardManager.js';
-import { EventEmitterSocket } from './EventEmitterSocket.js';
-import net from 'net';
+import { JSONtoCard } from './formatCards.js';
 
 const cardManager = CardManager.getInstance();
 
-const server = net.createServer((connection) => {
-  console.log('A client has connected.');
-  const serverSocket = new EventEmitterSocket(connection);
+const app = express();
 
-  serverSocket.on('close', () => {
-    console.log('A client has disconnected.\n');
-  });
+app.use(express.json());
 
-  serverSocket.on('request', (request, connection) => {
-    let cardData;
-    if (request.action === 'add' || request.action === 'update') {
-      cardData = new MagiCard(
-        request.card.id,
-        request.card.name,
-        request.card.manaCost,
-        request.card.color,
-        request.card.cardType,
-        request.card.rarity,
-        request.card.rulesText,
-        request.card.marketValue,
-        request.card.powerToughness,
-        request.card.loyalty,
-      );
-    }
-
-    console.log('Received request: ', request.action);
-    switch (request.action) {
-      case 'add':
-        cardManager.addCard(request.user, cardData!, (error, result) => {
-          if (error) {
-            connection.write(JSON.stringify({ status: 'Error', answer: error }));
-          } else {
-            connection.write(JSON.stringify({ status: 'Success', answer: result }));
-          }
-          connection.end();
-        });
-        break;
-      case 'update':
-        cardManager.updateCard(request.user, cardData!, (error, result) => {
-          if (error) {
-            connection.write(JSON.stringify({ status: 'Error', answer: error }));
-          } else {
-            connection.write(JSON.stringify({ status: 'Success', answer: result }));
-          }
-          connection.end();
-        });
-        break;
-      case 'remove':
-        cardManager.removeCard(request.user, request.cardID, (error, result) => {
-          if (error) {
-            connection.write(JSON.stringify({ status: 'Error', answer: error }));
-          } else {
-            connection.write(JSON.stringify({ status: 'Success', answer: result }));
-          }
-          connection.end();
-        });
-        break;
-      case 'show':
-        cardManager.showCard(request.user, request.cardID, (error, result) => {
-          if (error) {
-            connection.write(JSON.stringify({ status: 'Error', answer: error }));
-          } else {
-            connection.write(JSON.stringify({ status: 'CardsReceived', answer: result }));
-          }
-          connection.end();
-        });
-        break;
-      case 'list':
-        cardManager.listCollection(request.user, (error, result) => {
-          if (error) {
-            connection.write(JSON.stringify({ status: 'Error', answer: error }));
-          } else {
-            connection.write(JSON.stringify({ status: 'CardsReceived', answer: result }));
-          }
-          connection.end();
-        });
-        break;
-      default:
-        connection.write(console.log('Invalid action'));
-        connection.end();
-    }
-  });
+app.get('/cards', (req, res) => {
+  if (!req.query.user) {
+    res.send({
+      error: 'An user has to be provided',
+    });
+    return;
+  }
+  if (req.query.id) {
+    cardManager.showCard(req.query.user as string, parseInt(req.query.id as string), (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+      }
+    });
+  } else {
+    cardManager.listCollection(req.query.user as string, (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+      }
+    });
+  }
 });
 
-server.listen(60300, () => {
-  console.log('Waiting for clients to connect.');
+app.post('/cards', (req, res) => {
+  if (!req.query.user) {
+    res.send({
+      error: 'An user has to be provided',
+    });
+  } else {
+    cardManager.addCard(req.query.user as string, JSONtoCard(req.body), (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+      }
+    });
+  }
+});
+
+app.delete('/cards', (req, res) => {
+  if (!req.query.user) {
+    res.send({
+      error: 'An user has to be provided',
+    });
+    return;
+  }
+  if (!req.query.id) {
+    res.send({
+      error: 'An id has to be provided',
+    });
+  } else {
+    cardManager.removeCard(req.query.user as string, parseInt(req.query.id as string), (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+      }
+    });
+  }
+});
+
+app.patch('/cards', (req, res) => {
+  if (!req.query.user) {
+    res.send({
+      error: 'An user has to be provided',
+    });
+    return;
+  }
+  if (!req.query.id) {
+    res.send({
+      error: 'An id has to be provided',
+    });
+  } else {
+    if (parseInt(req.query.id as string) !== req.body.id) {
+      res.send({
+        error: 'The id in the body has to be the same as the one in the query string',
+      });
+      return;
+    }
+    cardManager.updateCard(req.query.user as string, JSONtoCard(req.body), (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+      }
+    });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server is up on port 3000');
 });

@@ -27,7 +27,7 @@ export class CardManager {
    * @callback
    */
   public addCard(user: string, card: MagiCard, callback: (error: string | undefined, result: string | undefined) => void): void {
-    const userDirectory = `./data/${user}`;
+    const userDirectory = `./cards/${user}`;
     const cardFilePath = `${userDirectory}/${card.getId()}.json`;
 
     fs.mkdir(userDirectory, { recursive: true }, (err) => {
@@ -62,7 +62,7 @@ export class CardManager {
     card: MagiCard,
     callback: (error: string | undefined, result: string | undefined) => void,
   ): void {
-    const cardFilePath = `./data/${user}/${card.getId()}.json`;
+    const cardFilePath = `./cards/${user}/${card.getId()}.json`;
 
     fs.stat(cardFilePath, (err) => {
       if (err) {
@@ -90,7 +90,7 @@ export class CardManager {
     cardID: number,
     callback: (error: string | undefined, result: string | undefined) => void,
   ): void {
-    const cardFilePath = `./data/${user}/${cardID}.json`;
+    const cardFilePath = `./cards/${user}/${cardID}.json`;
 
     fs.stat(cardFilePath, (err) => {
       if (err) {
@@ -114,7 +114,7 @@ export class CardManager {
    * @callback
    */
   public showCard(user: string, cardID: number, callback: (error: string | undefined, result: string | undefined) => void): void {
-    const cardFilePath = `./data/${user}/${cardID}.json`;
+    const cardFilePath = `./cards/${user}/${cardID}.json`;
 
     fs.stat(cardFilePath, (err) => {
       if (err) {
@@ -139,7 +139,7 @@ export class CardManager {
    * @callback
    */
   public listCollection(user: string, callback: (error: string | undefined, result: string | undefined) => void): void {
-    const dirPath = `./data/${user}`;
+    const dirPath = `./cards/${user}`;
 
     fs.stat(dirPath, (err) => {
       if (err) {
