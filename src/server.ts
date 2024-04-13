@@ -16,7 +16,8 @@ app.use(express.json());
 app.get('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
-      error: 'An user has to be provided',
+      status: 'Error',
+      answer: 'An user has to be provided',
     });
     return;
   }
@@ -47,7 +48,8 @@ app.get('/cards', (req, res) => {
 app.post('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
-      error: 'An user has to be provided',
+      status: 'Error',
+      answer: 'An user has to be provided',
     });
   } else {
     cardManager.addCard(req.query.user as string, JSONtoCard(req.body), (error, result) => {
@@ -67,13 +69,15 @@ app.post('/cards', (req, res) => {
 app.delete('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
-      error: 'An user has to be provided',
+      status: 'Error',
+      answer: 'An user has to be provided',
     });
     return;
   }
   if (!req.query.id) {
     res.send({
-      error: 'An id has to be provided',
+      status: 'Error',
+      answer: 'An id has to be provided',
     });
   } else {
     cardManager.removeCard(req.query.user as string, parseInt(req.query.id as string), (error, result) => {
@@ -94,18 +98,21 @@ app.delete('/cards', (req, res) => {
 app.patch('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
-      error: 'An user has to be provided',
+      status: 'Error',
+      answer: 'An user has to be provided',
     });
     return;
   }
   if (!req.query.id) {
     res.send({
-      error: 'An id has to be provided',
+      status: 'Error',
+      answer: 'An id has to be provided',
     });
   } else {
     if (parseInt(req.query.id as string) !== req.body.id) {
       res.send({
-        error: 'The id in the body has to be the same as the one in the query string',
+        status: 'Error',
+        answer: 'The id in the body has to be the same as the one in the query string',
       });
       return;
     }

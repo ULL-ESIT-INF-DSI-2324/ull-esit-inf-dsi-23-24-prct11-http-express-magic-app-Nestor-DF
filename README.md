@@ -198,7 +198,7 @@ export function JSONtoCard(card: any): MagiCard {
 
 
 ## **Conclusiones**
-En conclusión, esta práctica me ha proporcionado una comprensión más profunda de las capacidades de Node.js, desde la manipulación de eventos asíncronos hasta la interacción con el sistema de archivos y la creación de aplicaciones de red usando **Express**, además de haber reforzado el uso de herramientas como yargs y chalk para mejorar la experiencia del usuario en la línea de comandos.
+En conclusión, esta práctica me ha ayudado a entender mejor como implementar un servidor HTTP con Express, el significado de los diferentes verbos HTTP y cómo emplear el patrón callback de mejor forma. Así como el funcionamiento general cliente-servidor.
 
 
 
