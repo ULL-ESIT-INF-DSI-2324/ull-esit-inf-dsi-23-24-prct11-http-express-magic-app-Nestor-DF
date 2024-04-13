@@ -19,13 +19,13 @@
 
 
 ## **Introducción**
-En esta práctica se desarrollará una aplicación cliente-servidor usando **Express** para gestionar información sobre cartas del juego Magic: The Gathering. Desde un cliente como, por ejemplo, ThunderClient o Postman, se podrán llevar a cabo peticiones HTTP al servidor como añadir, modificar, eliminar, listar y leer la información asociada a estas cartas. Toda la información de cada carta se almacenará en formato JSON en el sistema de archivos del servidor. Además, se enfatiza que la interacción con la aplicación se realizará exclusivamente a través de la línea de comandos. 
+En esta práctica se desarrollará una aplicación cliente-servidor usando **Express** para gestionar información sobre cartas del juego Magic: The Gathering. Desde un cliente como, por ejemplo, ThunderClient o Postman, se podrán llevar a cabo peticiones HTTP al servidor como añadir, modificar, eliminar, listar y leer la información asociada a estas cartas. Toda la información de cada carta se almacenará en formato JSON en el sistema de archivos del servidor.
 
 
 
 
 ## **Desarrollo**
-Partiendo de la clase que había creado en la la práctica anterior cambié todos los métodos síncronos por métodos **asíncronos basados en callbacks**:
+A partir de la clase desarrollada en la práctica previa he reestructurado todos los métodos para que sean **asíncronos y empleen el patrón callback**, de forma que en caso de error, la variable *error* almacenará una cadena que describa la naturaleza del error, mientras que *result* permanecerá indefinido. Si la operación se realiza correctamente, *error* será indefinido y *result* contendrá un mensaje con el resultado deseado.
 
 ```ts
 export class CardManager {
@@ -90,7 +90,109 @@ export class CardManager {
 }
 ```
 
-Se puede apreciar como uso el patrón de callbacks de tal manera que si hay un error la variable *error* contendrá una string con la descripción del error mientras *result* será undefined. Si todo va bien *error* contendrá undefined y *result* contendrá un mensaje con el resultado.
+En lo que respecta el servidor HTTP creado con Express, he usado los verbos HTTP tal y cómo venía especificado en el guion:
+
+1. **GET /cards**: Este endpoint se utiliza para obtener información sobre una carta específica o para listar todas las cartas de la colección de un usuario. Si se proporciona un ID de carta como parámetro de la consulta (query string), se devuelve la información de esa carta en particular. Si no se proporciona un ID, se devuelven todas las cartas de la colección del usuario.
+
+2. **POST /cards**: Se utiliza para añadir una nueva carta a la colección de un usuario. La información de la carta que se desea añadir se envía en formato JSON en el cuerpo de la petición, y el usuario se especifica como parámetro en la query string.
+
+3. **DELETE /cards**: Permite eliminar una carta específica de la colección de un usuario. Se espera que se proporcione tanto el ID de la carta como el nombre de usuario como parámetros en la query string.
+
+4. **PATCH /cards**: Este endpoint se utiliza para modificar la información de una carta existente en la colección de un usuario. Se espera que se proporcione tanto el ID de la carta como el nombre de usuario como parámetros en la query string. La nueva información de la carta se envía en formato JSON en el cuerpo de la petición. Además, se verifica que el ID de la carta en el cuerpo de la petición coincida con el proporcionado en la query string.
+
+```ts
+const app = express();
+
+app.use(express.json());
+
+app.get('/cards', (req, res) => {
+  if (!req.query.user) {
+    res.send({
+      error: 'An user has to be provided',
+    });
+    return;
+  }
+  if (req.query.id) {
+    cardManager.showCard(req.query.user as string, parseInt(req.query.id as string), (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+      }
+    });
+  } else {
+    cardManager.listCollection(req.query.user as string, (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+      }
+    });
+  }
+});
+
+app.post('/cards', (req, res) => {
+  if (!req.query.user) {
+    res.send({
+      error: 'An user has to be provided',
+    });
+  } else {
+    cardManager.addCard(req.query.user as string, JSONtoCard(req.body), (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
+      }
+    });
+  }
+});
+
+app.delete('/cards', (req, res) => {
+  if (!req.query.user) {
+    res.send({
+      error: 'An user has to be provided',
+    });
+    return;
+  }
+  if (!req.query.id) {
+    res.send({
+      error: 'An id has to be provided',
+    });
+  } else {
+    cardManager.removeCard(req.query.user as string, parseInt(req.query.id as string), (error, result) => {
+      if (error) {
+        res.send(JSON.stringify({ status: 'Error', answer: error }));
+      } else {
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
+      }
+    });
+  }
+});
+// Demás código
+```
+
+Se puede observar como todas las peticiones se hacen a través de la ruta **/cards** y cómo se sigue una estructura básica. Es decir,  se comprueban los parámetros de la **query string** y en base a estos se realiza una acción u otra. Por ejemplo, se comprueba que el usuario esté en la **query string** en todas las peticiones y si no está se manda un mensaje de respuesta de error. A continuación,  se comprueba el campo **id** y si todo es correcto se llama al método correpondiente de la clase **CardManager** empleando el **patrón callback**.
+
+Se destaca como todas las **respuestas** del servidor están en **formato JSON** y siguen la misma estructura {status, asnwer}
+
+Por otro lado, por temas de **compatibilidad** con la clase **CardManager** tuve que hacer una función simple para convertir las **cartas** que vienen en formato **JSON** en el ***body*** de la petición a objetos **MagiCard**.
+```ts
+export function JSONtoCard(card: any): MagiCard {
+  const magiCard = new MagiCard(
+    card.id,
+    card.name,
+    card.manaCost,
+    card.color,
+    card.cardType,
+    card.rarity,
+    card.rulesText,
+    card.marketValue,
+    card.powerToughness,
+    card.loyalty,
+  );
+  return magiCard;
+}
+```
 
 
 

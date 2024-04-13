@@ -8,6 +8,11 @@ const app = express();
 
 app.use(express.json());
 
+/**
+ * Retrieves information about a card from a user's collection or lists all cards in their collection.
+ * In this case, the card ID will be provided, along with the user, as parameters in the query string of the request.
+ * If a specific ID is not specified, it indicates that the complete collection of cards for the user is desired.
+ */
 app.get('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
@@ -34,6 +39,11 @@ app.get('/cards', (req, res) => {
   }
 });
 
+/**
+ * Adds a card to a user's collection.
+ * In this case, the card to be added to the collection should be specified in JSON format in the request body.
+ * The user should be indicated in the query string of the request.
+ */
 app.post('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
@@ -44,12 +54,16 @@ app.post('/cards', (req, res) => {
       if (error) {
         res.send(JSON.stringify({ status: 'Error', answer: error }));
       } else {
-        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
       }
     });
   }
 });
 
+/**
+ * Deletes a card from a user's collection.
+ * In this case, the card ID to be deleted will be provided, along with the user, as parameters in the query string of the request.
+ */
 app.delete('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
@@ -66,12 +80,17 @@ app.delete('/cards', (req, res) => {
       if (error) {
         res.send(JSON.stringify({ status: 'Error', answer: error }));
       } else {
-        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
       }
     });
   }
 });
 
+/**
+ * Modifies the information of an existing card in a user's collection.
+ * In this case, the card ID to be modified will be provided, along with the user, as parameters in the query string of the request.
+ * Additionally, the information to be modified will be specified in JSON format in the request body.
+ */
 app.patch('/cards', (req, res) => {
   if (!req.query.user) {
     res.send({
@@ -94,7 +113,7 @@ app.patch('/cards', (req, res) => {
       if (error) {
         res.send(JSON.stringify({ status: 'Error', answer: error }));
       } else {
-        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
       }
     });
   }
