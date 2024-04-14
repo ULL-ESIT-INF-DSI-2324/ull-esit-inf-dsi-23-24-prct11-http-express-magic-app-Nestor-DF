@@ -4,7 +4,7 @@ import { JSONtoCard } from './formatCards.js';
 
 const cardManager = CardManager.getInstance();
 
-const app = express();
+export const app = express();
 
 app.use(express.json());
 
@@ -26,7 +26,7 @@ app.get('/cards', (req, res) => {
       if (error) {
         res.send(JSON.stringify({ status: 'Error', answer: error }));
       } else {
-        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
       }
     });
   } else {
@@ -34,7 +34,7 @@ app.get('/cards', (req, res) => {
       if (error) {
         res.send(JSON.stringify({ status: 'Error', answer: error }));
       } else {
-        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
       }
     });
   }

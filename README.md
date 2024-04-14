@@ -90,7 +90,7 @@ export class CardManager {
 }
 ```
 
-En lo que respecta el servidor HTTP creado con Express, he usado los verbos HTTP tal y cómo venía especificado en el guion:
+En lo que respecta el servidor HTTP creado con Express, he usado los **verbos HTTP** tal y cómo venía especificado en el guion:
 
 1. **GET /cards**: Este endpoint se utiliza para obtener información sobre una carta específica o para listar todas las cartas de la colección de un usuario. Si se proporciona un ID de carta como parámetro de la consulta (query string), se devuelve la información de esa carta en particular. Si no se proporciona un ID, se devuelven todas las cartas de la colección del usuario.
 
@@ -117,7 +117,7 @@ app.get('/cards', (req, res) => {
       if (error) {
         res.send(JSON.stringify({ status: 'Error', answer: error }));
       } else {
-        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
       }
     });
   } else {
@@ -125,7 +125,7 @@ app.get('/cards', (req, res) => {
       if (error) {
         res.send(JSON.stringify({ status: 'Error', answer: error }));
       } else {
-        res.send(JSON.stringify({ status: 'CardsReceived', answer: result }));
+        res.send(JSON.stringify({ status: 'Success', answer: result }));
       }
     });
   }
@@ -173,7 +173,11 @@ app.delete('/cards', (req, res) => {
 
 Se puede observar como todas las peticiones se hacen a través de la ruta **/cards** y cómo se sigue una estructura básica. Es decir,  se comprueban los parámetros de la **query string** y en base a estos se realiza una acción u otra. Por ejemplo, se comprueba que el usuario esté en la **query string** en todas las peticiones y si no está se manda un mensaje de respuesta de error. A continuación,  se comprueba el campo **id** y si todo es correcto se llama al método correpondiente de la clase **CardManager** empleando el **patrón callback**.
 
-Se destaca como todas las **respuestas** del servidor están en **formato JSON** y siguen la misma estructura {status, asnwer}
+Se destaca como todas las **respuestas** del servidor están en **formato JSON** y siguen la misma estructura {status, answer}
+Se distinguen dos casos claros por el campo *status* de la respuesta del servidor:
+- Error: Ocurre cuando se produce un error en el servidor
+- Sucess: Ocurre cuando todo va bien en la petición
+En el campo *answer* viene un mensaje informativo o cartas en formato json si se trata de una petición get.
 
 Por otro lado, por temas de **compatibilidad** con la clase **CardManager** tuve que hacer una función simple para convertir las **cartas** que vienen en formato **JSON** en el ***body*** de la petición a objetos **MagiCard**.
 ```ts
@@ -192,6 +196,46 @@ export function JSONtoCard(card: any): MagiCard {
   );
   return magiCard;
 }
+```
+
+Para comprobar el funcionamiento del servidor Express realicé las pruebas usando los paquetes **request y Mocha y Chai**, el siguiente fragmento de código muestra la estructura general que seguí:
+```ts
+import 'mocha';
+import { expect } from 'chai';
+import request from 'request';
+
+describe('Pruebas de las rutas de la aplicación Express', () => {
+  it('no debería funcionar si el usuario no se da en la query string', (done) => {
+    request.get({ url: 'http://localhost:3000/cards', json: true }, (error: Error, response) => {
+      expect(response.body.status).to.equal('Error');
+      expect(response.body.answer).to.equal('An user has to be provided');
+      done();
+    });
+  });
+  it('debería eliminar una carta de un usuario', (done) => {
+    request.delete({ url: 'http://localhost:3000/cards?user=juan&id=55', json: true }, (error: Error, response) => {
+      expect(response.body.status).to.equal('Success');
+      expect(response.body.answer).to.equal("Card removed in juan's collection");
+      done();
+    });
+  });
+  it('debería añadir una carta a un usuario', (done) => {
+    const cardToAdd = {
+      id: 55,
+      name: 'Qiyana',
+      manaCost: 6767,
+      color: 'White',
+      type: 'Artifact',
+      rarity: 'Rare',
+      rulesText: 'Tap: ERQWQAA',
+      marketValue: 999,
+    };
+    request.post({ url: 'http://localhost:3000/cards?user=juan', json: cardToAdd }, (error: Error, response) => {
+      expect(response.body.status).to.equal('Success');
+      done();
+    });
+  });
+  // Demás código
 ```
 
 
