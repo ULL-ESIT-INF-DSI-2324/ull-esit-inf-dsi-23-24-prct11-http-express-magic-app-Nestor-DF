@@ -4,7 +4,7 @@ import { JSONtoCard } from './formatCards.js';
 
 const cardManager = CardManager.getInstance();
 
-export const app = express();
+const app = express();
 
 app.use(express.json());
 

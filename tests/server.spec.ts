@@ -1,7 +1,6 @@
 import 'mocha';
 import { expect } from 'chai';
 import request from 'request';
-//import { app } from '../src/server.js';
 
 describe('Pruebas de las rutas de la aplicación Express', () => {
   // Prueba para la ruta GET /cards
