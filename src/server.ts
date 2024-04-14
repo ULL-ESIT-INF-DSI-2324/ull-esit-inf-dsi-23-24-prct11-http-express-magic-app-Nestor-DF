@@ -91,7 +91,7 @@ app.delete('/cards', (req, res) => {
 });
 
 /**
- * Modifies the information of an existing card in a user's collection
+ * Modifies the information of an existing card in a user's collection.
  * In this case, the card ID to be modified will be provided, along with the user, as parameters in the query string of the request.
  * Additionally, the information to be modified will be specified in JSON format in the request body.
  */
