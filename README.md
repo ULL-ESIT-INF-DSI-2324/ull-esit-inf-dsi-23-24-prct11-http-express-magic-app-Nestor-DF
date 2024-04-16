@@ -10,6 +10,7 @@
   - [**Índice**](#índice)
   - [**Introducción**](#introducción)
   - [**Desarrollo**](#desarrollo)
+  - [**Ejercicio PE**](#ejercicio-pe)
   - [**Conclusiones**](#conclusiones)
   - [**Recursos Empleados**](#recursos-empleados)
 
@@ -234,6 +235,49 @@ describe('Pruebas de las rutas de la aplicación Express', () => {
     });
   });
   // Demás código
+```
+
+
+
+
+## **Ejercicio PE**
+
+En este ejercicio, se requería seleccionar dos métodos y aplicarlos utilizando promesas. En mi caso, opté por implementar el método de mostrar una carta y el método de eliminar una carta. Se observa cómo ambos devuelven una promesa y emplean encadenamiento de promesas mediante múltiples `then()`, que se ejecutan cuando todo transcurre sin problemas, y solo tienen un bloque `catch()` que se activa en caso de algún inconveniente. Además, se utiliza `resolve` y `reject` respectivamente.
+
+```ts
+export function showCard(user: string, cardID: number): Promise<string> {
+  const cardFilePath = `./cards/${user}/${cardID}.json`;
+
+  return new Promise<string>((resolve, reject) => {
+    fs.stat(cardFilePath)
+      .then(() => {
+        return fs.readFile(cardFilePath);
+      })
+      .then((data) => {
+        resolve(data.toString());
+      })
+      .catch(() => {
+        reject(`Card not found at ${user}'s collection`);
+      });
+  });
+}
+
+export function removeCard(user: string, cardID: number): Promise<string> {
+  const cardFilePath = `./cards/${user}/${cardID}.json`;
+
+  return new Promise<string>((resolve, reject) => {
+    fs.stat(cardFilePath)
+      .then(() => {
+        return fs.rm(cardFilePath);
+      })
+      .then(() => {
+        resolve(`Card removed in ${user}'s collection`);
+      })
+      .catch(() => {
+        reject(`Card not found at ${user}'s collection`);
+      });
+  });
+}
 ```
 
 
